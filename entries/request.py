@@ -1,39 +1,59 @@
-ENTRIES = [
-    {
-        "date": "2020-08-04",
-        "concept": "css",
-        "entry": "ttttttttttttttt",
-        "moodId": 1,
-        "instructorId": 1,
-        "id": 1
-    },
-    {
-        "date": "2020-08-07",
-        "concept": "Python",
-        "entry": "test entry 2",
-        "moodId": 3,
-        "instructorId": 1,
-        "id": 2
-    },
-    {
-        "date": "2020-10-04",
-        "concept": "javascript",
-        "entry": "Test entry 3",
-        "moodId": 2,
-        "instructorId": 2,
-        "id": 3
-    }
-]
+import sqlite3
+import json
+from sqlite3 import dbapi2
+from models import Entry
 
 
 def get_all_entries():
-    return ENTRIES
+    with sqlite3.connect("dailyjournal.db") as conn:
+
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        SELECT
+            e.id,
+            e.date,
+            e.concept,
+            e.entry,
+            e.mood_id,
+            e.instructor_id
+        FROM Entry e
+        """)
+
+        entries = []
+
+        dataset = db_cursor.fetchall()
+
+        for row in dataset:
+            entry = Entry(row['id'], row['date'], row['concept'],
+                          row['entry'], row['mood_id'], row['instructor_id'])
+            entries.append(entry.__dict__)
+
+    return json.dumps(entries)
 
 
 def get_single_entry(id):
-    requested_entry = None
+    with sqlite3.connect("dailyjournal.db") as conn:
 
-    for entry in ENTRIES:
-        if entry["id"] == id:
-            requested_entry = entry
-    return requested_entry
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        SELECT
+            e.id,
+            e.date,
+            e.concept,
+            e.entry,
+            e.mood_id,
+            e.instructor_id
+        FROM Entry e
+        WHERE e.id = ?
+        """, (id,))
+
+        data = db_cursor.fetchone()
+
+        entry = Entry(data['id'], data['date'], data['concept'],
+                          data['entry'], data['mood_id'], data['instructor_id'])
+
+    return json.dumps(entry.__dict__)
