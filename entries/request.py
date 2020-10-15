@@ -1,6 +1,5 @@
 import sqlite3
 import json
-from sqlite3 import dbapi2
 from models import Entry
 
 
@@ -57,3 +56,12 @@ def get_single_entry(id):
                           data['entry'], data['mood_id'], data['instructor_id'])
 
     return json.dumps(entry.__dict__)
+
+def delete_entry(id):
+    with sqlite3.connect("dailyjournal.db") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        DELETE FROM Entry
+        WHERE id = ?
+        """, (id,))
